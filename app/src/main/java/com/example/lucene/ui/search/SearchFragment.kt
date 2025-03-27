@@ -30,20 +30,24 @@ class SearchFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        binding.searchEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                val query = s?.toString().orEmpty()
-                Log.i(TAG, "User typed query: $query")
-                viewModel.startAction(SearchAction.SearchQuery(query))
-            }
-        })
-
+        configureListeners()
         viewModel.event.observe(viewLifecycleOwner) { event ->
             processEvent(event)
         }
+    }
+
+    private fun configureListeners() = with(binding) {
+        searchEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(query: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+            override fun onTextChanged(query: CharSequence?, start: Int, before: Int, count: Int) {
+            }
+            override fun afterTextChanged(query: Editable?) {
+                val finalQuery = query?.toString().orEmpty()
+                Log.i(TAG, "User typed query: $finalQuery")
+                viewModel.startAction(SearchAction.SearchQuery(finalQuery))
+            }
+        })
     }
 
     private fun processEvent(event: BaseEvent) {
