@@ -37,28 +37,19 @@ android {
 
 dependencies {
 
-    // -- Dependências Android (exemplo) --
+    //Android dependencies
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.constraintlayout)
-    // ...
 
-    // Testes, etc.
+
+    //Tests Dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-//    // >>> Lucene (versão 9.12.1) <<<
-//    // 'lucene-core' já contém a parte org.apache.lucene.store.*
-//    implementation("org.apache.lucene:lucene-core:9.12.1")
-//
-//    // Para analisadores padrão (antes era 'lucene-analyzers-common')
-//    implementation("org.apache.lucene:lucene-analysis-common:9.12.1")
-//
-//    // QueryParser (MultiFieldQueryParser, etc.)
-//    implementation("org.apache.lucene:lucene-queryparser:9.12.1")
-
+    //Lucene dependencies
     implementation("org.apache.lucene:lucene-core:8.11.2")
     implementation("org.apache.lucene:lucene-analyzers-common:8.11.2")
     implementation("org.apache.lucene:lucene-queryparser:8.11.2")
