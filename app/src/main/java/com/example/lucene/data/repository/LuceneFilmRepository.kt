@@ -85,14 +85,12 @@ class LuceneFilmRepository(context: Context) {
 
         // Faz parse da query string, gerando um objeto Query Lucene.
         val query: Query = parser.parse(queryStr)
-        Log.e("query dps do parser", query.toString())
 
         val topDocs: TopDocs = indexSearcher.search(query, 50)
 
         for (scoreDoc: ScoreDoc in topDocs.scoreDocs) {
             // Pegamos o Document real pelo docID.
             val doc: Document = indexSearcher.doc(scoreDoc.doc)
-            Log.e("doc", doc.toString())
 
             val film = Film(
                 id = doc.get("id")?.toIntOrNull() ?: 0,

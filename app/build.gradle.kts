@@ -33,6 +33,9 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
@@ -43,7 +46,6 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.constraintlayout)
 
-
     //Tests Dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -53,4 +55,8 @@ dependencies {
     implementation("org.apache.lucene:lucene-core:8.11.2")
     implementation("org.apache.lucene:lucene-analyzers-common:8.11.2")
     implementation("org.apache.lucene:lucene-queryparser:8.11.2")
+    
+    //Android KTX
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
 }

@@ -1,6 +1,7 @@
-package com.example.lucene.mvi.search
+package com.example.lucene.ui.search
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -8,6 +9,7 @@ import com.example.lucene.data.repository.LuceneFilmRepository
 import com.example.lucene.states.BaseEvent
 import com.example.lucene.states.SearchAction
 import com.example.lucene.states.SearchEvent
+import com.example.lucene.utils.Constants.TAG
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,6 +23,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     private var repository: LuceneFilmRepository? = null
 
     init {
+        Log.d(TAG, "Initializing SearchViewModel...")
         initRepository()
     }
 
@@ -29,12 +32,14 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             try {
                 repository = LuceneFilmRepository(getApplication())
                 withContext(Dispatchers.Main) {
+                    Log.w(TAG, "Repository initialized successfully, emitting Success(emptyList)")
                     setEvent(SearchEvent.Success(emptyList()))
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    setEvent(SearchEvent.Error("Falha ao inicializar: ${e.message}"))
+                    Log.e(TAG, "Failed to initialize repository: ${e.message}")
+                    setEvent(SearchEvent.Error("Failed to initialize: ${e.message}"))
                 }
             }
         }
@@ -46,27 +51,34 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
 
     fun startAction(action: SearchAction) {
         when (action) {
-            is SearchAction.SearchQuery -> doSearch(action.query)
+            is SearchAction.SearchQuery -> {
+                Log.i(TAG, "Received SearchQuery action with query: \"${action.query}\"")
+                doSearch(action.query)
+            }
         }
     }
 
     private fun doSearch(query: String) {
+        Log.d(TAG, "Starting search for query: \"$query\"")
         setEvent(BaseEvent.ShowLoadingDialog)
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val results = repository?.search(query).orEmpty()
                 withContext(Dispatchers.Main) {
+                    Log.i(TAG, "Search successful with ${results.size} results")
                     setEvent(SearchEvent.Success(results))
                     setEvent(BaseEvent.DismissLoadingDialog)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    setEvent(SearchEvent.Error("Erro na busca: ${e.message}"))
+                    Log.e(TAG, "Search failed: ${e.message}")
+                    setEvent(SearchEvent.Error("Search failed: ${e.message}"))
                     setEvent(BaseEvent.DismissLoadingDialog)
                 }
             }
         }
     }
 }
+
