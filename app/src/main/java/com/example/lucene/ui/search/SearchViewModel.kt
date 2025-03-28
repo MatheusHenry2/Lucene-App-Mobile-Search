@@ -23,6 +23,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     private val tmdbRepository = TMDbRepository()
     private var luceneIndexer: LuceneMovieIndexer? = null
 
+
     init {
         loadAndIndexPopularMovies()
     }
@@ -35,6 +36,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                 Log.d("SearchViewModel", "Movies loaded: ${movies.joinToString(separator = ", ") { "(${it.title})" }}")
                 luceneIndexer = LuceneMovieIndexer(movies)
                 withContext(Dispatchers.Main) {
+                    setEvent(SearchEvent.MoviesIndexed(movies.size))
                     setEvent(SearchEvent.Success(emptyList()))
                     Log.i("SearchViewModel", "Movies loaded and indexed successfully")
                 }

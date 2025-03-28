@@ -1,5 +1,6 @@
 package com.example.lucene.ui.search
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -60,12 +61,19 @@ class SearchFragment : Fragment() {
         })
     }
 
+    @SuppressLint("SetTextI18n")
     private fun processEvent(event: BaseEvent) {
         when (event) {
             BaseEvent.ShowLoadingDialog -> handleShowLoadingDialog()
             BaseEvent.DismissLoadingDialog -> handleDismissLoadingDialog()
             is SearchEvent.Success -> handleSearchSuccess(event.movies)
             is SearchEvent.Error -> handleSearchError(event.message)
+            is SearchEvent.MoviesIndexed -> with(binding) {
+                loadedMoviesCountTextView.apply {
+                    text = "Movies loaded and indexed: ${event.total}"
+                    visibility = View.VISIBLE
+                }
+            }
         }
     }
 
