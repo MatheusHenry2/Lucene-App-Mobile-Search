@@ -10,11 +10,13 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.lucene.data.model.request.TmdbMovie
 import com.example.lucene.databinding.FragmentSearchBinding
 import com.example.lucene.states.BaseEvent
 import com.example.lucene.states.SearchAction
 import com.example.lucene.states.SearchEvent
 import com.example.lucene.utils.Constants.TAG
+
 
 class SearchFragment : Fragment() {
 
@@ -41,7 +43,14 @@ class SearchFragment : Fragment() {
 
     private fun configureListeners() = with(binding) {
         searchEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(query: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun beforeTextChanged(
+                query: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
+            }
+
             override fun onTextChanged(query: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(query: Editable?) {
                 val finalQuery = query?.toString().orEmpty()
@@ -53,31 +62,37 @@ class SearchFragment : Fragment() {
 
     private fun processEvent(event: BaseEvent) {
         when (event) {
-            BaseEvent.ShowLoadingDialog -> {
-                binding.progressBar.visibility = View.VISIBLE
-                binding.errorTextView.visibility = View.GONE
-                binding.resultsRecyclerView.visibility = View.GONE
-            }
-            BaseEvent.DismissLoadingDialog -> {
-                binding.progressBar.visibility = View.GONE
-            }
-            is SearchEvent.Success -> {
-                Log.i(TAG, "Event: Search Success with ${event.films.size} results")
-                binding.progressBar.visibility = View.GONE
-                binding.errorTextView.visibility = View.GONE
-                binding.resultsRecyclerView.visibility = View.VISIBLE
-                val adapter = FilmAdapter(event.films)
-                binding.resultsRecyclerView.adapter = adapter
-            }
-            is SearchEvent.Error -> {
-                Log.i(TAG, "Event: Search Error: ${event.message}")
-                binding.progressBar.visibility = View.GONE
-                binding.resultsRecyclerView.visibility = View.GONE
-                binding.errorTextView.visibility = View.VISIBLE
-                binding.errorTextView.text = event.message
-            }
+            BaseEvent.ShowLoadingDialog -> handleShowLoadingDialog()
+            BaseEvent.DismissLoadingDialog -> handleDismissLoadingDialog()
+            is SearchEvent.Success -> handleSearchSuccess(event.movies)
+            is SearchEvent.Error -> handleSearchError(event.message)
         }
     }
+
+    private fun handleShowLoadingDialog() = with(binding) {
+        progressBar.visibility = View.VISIBLE
+        errorTextView.visibility = View.GONE
+        resultsRecyclerView.visibility = View.GONE
+    }
+
+    private fun handleSearchSuccess(films: List<TmdbMovie>) = with(binding) {
+        Log.i(TAG, "Event: Search Success with ${films.size} results")
+        progressBar.visibility = View.GONE
+        errorTextView.visibility = View.GONE
+        resultsRecyclerView.visibility = View.VISIBLE
+        val adapter = FilmAdapter(films)
+        resultsRecyclerView.adapter = adapter
+    }
+
+    private fun handleSearchError(message: String) = with(binding) {
+        Log.i(TAG, "Event: Search Error: $message")
+        progressBar.visibility = View.GONE
+        resultsRecyclerView.visibility = View.GONE
+        errorTextView.visibility = View.VISIBLE
+        errorTextView.text = message
+    }
+
+    private fun handleDismissLoadingDialog() = with(binding) { progressBar.visibility = View.GONE }
 
     override fun onDestroyView() {
         super.onDestroyView()

@@ -1,4 +1,4 @@
-package com.example.lucene.main
+package com.example.lucene.ui.main
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity

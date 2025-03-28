@@ -6,10 +6,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lucene.R
-import com.example.lucene.data.model.Film
+import com.example.lucene.data.model.request.TmdbMovie
 
 class FilmAdapter(
-    private val films: List<Film>
+    private val films: List<TmdbMovie>
 ) : RecyclerView.Adapter<FilmAdapter.FilmViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FilmViewHolder {
@@ -29,9 +29,9 @@ class FilmAdapter(
         private val titleTextView: TextView = itemView.findViewById(R.id.titleTextView)
         private val descriptionTextView: TextView = itemView.findViewById(R.id.descriptionTextView)
 
-        fun bind(film: Film) {
+        fun bind(film: TmdbMovie) {
             titleTextView.text = film.title
-            descriptionTextView.text = film.description
+            descriptionTextView.text = film.overview
         }
     }
 }

@@ -59,4 +59,9 @@ dependencies {
     //Android KTX
     implementation("androidx.fragment:fragment-ktx:1.6.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    // Converter Gson to Objects Json
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 }
