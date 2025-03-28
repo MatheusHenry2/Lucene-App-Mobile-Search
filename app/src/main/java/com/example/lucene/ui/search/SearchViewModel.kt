@@ -10,6 +10,8 @@ import com.example.lucene.utils.LuceneMovieIndexer
 import com.example.lucene.states.BaseEvent
 import com.example.lucene.states.SearchAction
 import com.example.lucene.states.SearchEvent
+import com.example.lucene.utils.Constants.TAG
+import com.example.lucene.utils.LuceneMovieIndexerSingleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,23 +30,26 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         loadAndIndexPopularMovies()
     }
 
-    private fun loadAndIndexPopularMovies() {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = tmdbRepository.getPopularMovies()
-                val movies = response.results
-                Log.d("SearchViewModel", "Movies loaded: ${movies.joinToString(separator = ", ") { "(${it.title})" }}")
-                luceneIndexer = LuceneMovieIndexer(movies)
-                withContext(Dispatchers.Main) {
-                    setEvent(SearchEvent.MoviesIndexed(movies.size))
-                    setEvent(SearchEvent.Success(emptyList()))
-                    Log.i("SearchViewModel", "Movies loaded and indexed successfully")
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                withContext(Dispatchers.Main) {
-                    setEvent(SearchEvent.Error("Failed to load popular movies: ${e.message}"))
-                }
+    private fun loadAndIndexPopularMovies() = CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val response = tmdbRepository.getPopularMovies()
+            val movies = response.results
+            Log.d(
+                TAG,
+                "Movies loaded: ${movies.joinToString(separator = ", ") { "(${it.title})" }}"
+            )
+            luceneIndexer = LuceneMovieIndexer(movies)
+            LuceneMovieIndexerSingleton.indexer = luceneIndexer
+            LuceneMovieIndexerSingleton.totalMoviesCount = movies.size
+            withContext(Dispatchers.Main) {
+                setEvent(SearchEvent.MoviesIndexed(movies.size))
+                setEvent(SearchEvent.Success(emptyList()))
+                Log.i(TAG, "Movies loaded and indexed successfully")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            withContext(Dispatchers.Main) {
+                setEvent(SearchEvent.Error("Failed to load popular movies: ${e.message}"))
             }
         }
     }
@@ -58,21 +63,21 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     private fun doSearch(query: String) {
-        Log.i("SearchViewModel", "Starting search for query: \"$query\"")
+        Log.i(TAG, "Starting search for query: \"$query\"")
         setEvent(BaseEvent.ShowLoadingDialog)
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val results = luceneIndexer?.search(query).orEmpty()
                 withContext(Dispatchers.Main) {
-                    Log.i("SearchViewModel", "Search successful with ${results.size} results")
+                    Log.i(TAG, "Search successful with ${results.size} results")
                     setEvent(SearchEvent.Success(results))
                     setEvent(BaseEvent.DismissLoadingDialog)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    Log.e("SearchViewModel", "Search failed: ${e.message}")
+                    Log.e(TAG, "Search failed: ${e.message}")
                     setEvent(SearchEvent.Error("Search failed: ${e.message}"))
                     setEvent(BaseEvent.DismissLoadingDialog)
                 }

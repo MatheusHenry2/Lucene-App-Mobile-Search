@@ -17,6 +17,7 @@ import com.example.lucene.states.BaseEvent
 import com.example.lucene.states.SearchAction
 import com.example.lucene.states.SearchEvent
 import com.example.lucene.utils.Constants.TAG
+import com.example.lucene.utils.LuceneMovieIndexerSingleton
 
 
 class SearchFragment : Fragment() {
@@ -105,5 +106,14 @@ class SearchFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val totalCount = LuceneMovieIndexerSingleton.totalMoviesCount
+        binding.loadedMoviesCountTextView.apply {
+            text = "Movies loaded and indexed: $totalCount"
+            visibility = View.VISIBLE
+        }
     }
 }

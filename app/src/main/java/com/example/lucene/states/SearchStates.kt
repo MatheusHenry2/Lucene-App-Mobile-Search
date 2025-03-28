@@ -11,3 +11,4 @@ sealed class SearchEvent : BaseEvent {
     data class Error(val message: String) : SearchEvent()
     data class MoviesIndexed(val total: Int) : SearchEvent()
 }
+

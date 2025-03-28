@@ -5,6 +5,5 @@ sealed interface BaseEvent {
     object DismissLoadingDialog : BaseEvent
 }
 
-sealed interface BaseAction {
+sealed interface BaseAction {}
 
-}
