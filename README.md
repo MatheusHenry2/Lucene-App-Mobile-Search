@@ -19,3 +19,25 @@
 
 - **WorkManager** 🔄  
   *A background task scheduler used to periodically download new films from the API and index them, ensuring that the search index remains up-to-date even when the app is running in the background..*
+
+ - **App Architecture**
+
+## 🗂️ Project Structure
+
+📦 com.example.lucene  
+├── **data**  
+│   ├── **model** – contains API models  
+│   │   ├── `request` – models used for sending/receiving data  
+│   │   └── `response` – response wrappers or paginated data  
+│   ├── **remote** – TMDb API interface  
+│   └── **repository** – handles API interaction logic  
+│  
+├── **ui** – user interface components  
+│   ├── `main` – entry point activity  
+│   └── `search` – search screen fragment, adapter, and logic  
+│  
+├── **states** – defines UI actions and event states  
+│  
+├── **utils** – Lucene indexer, constants, shared preferences, etc.  
+│  
+├── **worker** – background worker to fetch and index new movies
