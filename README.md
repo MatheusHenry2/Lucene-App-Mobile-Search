@@ -21,20 +21,28 @@
   *A background task scheduler used to periodically download new films from the API and index them, ensuring that the search index remains up-to-date even when the app is running in the background..*
 
 ## 🗂️ Project Structure
+🧭 Architecture Overview
+📦 com.example.lucene
+├── 🖼 UI
+│   ├── main (MainActivity)
+│   └── search (Search screen + adapter + ViewModel)
+│
+├── 🧠 State
+│   └── states (Actions, Events)
+│
+├── 📡 Data
+│   ├── model
+│   │   ├── request
+│   │   └── response
+│   └── remote
+│       ├── service (Retrofit)
+│       └── repository (API access logic)
+│
+├── 🛠 Utils
+│   └── (Lucene Indexer, AppPreferences, Constants)
+│
+└── ⏱ Worker
+    └── (Background download/index jobs)
 
-📦 com.example.lucene  
-├── data  
-│   ├── model  
-│   │   ├── request  
-│   │   └── response  
-│   └── remote  
-│       ├── repository  
-│       └── service  
-├── states  
-├── ui  
-│   ├── main  
-│   └── search  
-├── utils  
-└── worker
 
 
