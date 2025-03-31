@@ -1,6 +1,5 @@
 package com.example.lucene.ui.search
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -11,6 +10,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.lucene.R
 import com.example.lucene.data.model.request.TmdbMovie
 import com.example.lucene.databinding.FragmentSearchBinding
 import com.example.lucene.states.BaseEvent
@@ -18,7 +18,6 @@ import com.example.lucene.states.SearchAction
 import com.example.lucene.states.SearchEvent
 import com.example.lucene.utils.Constants.TAG
 import com.example.lucene.utils.LuceneMovieIndexerSingleton
-
 
 class SearchFragment : Fragment() {
 
@@ -35,27 +34,21 @@ class SearchFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        configureListeners()
-
-        binding.resultsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        viewModel.event.observe(viewLifecycleOwner) { event ->
-            processEvent(event)
-        }
+        setupRecyclerView()
+        setupSearchListener()
+        observeViewModelEvents()
     }
 
-    private fun configureListeners() = with(binding) {
-        searchEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(
-                query: CharSequence?,
-                start: Int,
-                count: Int,
-                after: Int
-            ) {
-            }
+    private fun setupRecyclerView() = with(binding) {
+        resultsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+    }
 
-            override fun onTextChanged(query: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(query: Editable?) {
-                val query = query?.toString().orEmpty()
+    private fun setupSearchListener() = with(binding) {
+        searchEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val query = s?.toString().orEmpty().trim()
                 Log.i(TAG, "User typed query: $query")
                 if (query.all { it.isDigit() } && query.length == 4) {
                     viewModel.startAction(SearchAction.SearchYear(query))
@@ -66,58 +59,55 @@ class SearchFragment : Fragment() {
         })
     }
 
-    @SuppressLint("SetTextI18n")
-    private fun processEvent(event: BaseEvent) {
-        when (event) {
-            BaseEvent.ShowLoadingDialog -> handleShowLoadingDialog()
-            BaseEvent.DismissLoadingDialog -> handleDismissLoadingDialog()
-            is SearchEvent.Success -> handleSearchSuccess(event.movies)
-            is SearchEvent.Error -> handleSearchError(event.message)
-            is SearchEvent.MoviesIndexed -> with(binding) {
-                loadedMoviesCountTextView.apply {
-                    text = "Movies loaded and indexed: ${event.total}"
-                    visibility = View.VISIBLE
-                }
+    private fun observeViewModelEvents() {
+        viewModel.event.observe(viewLifecycleOwner) { event ->
+            when (event) {
+                BaseEvent.ShowLoadingDialog -> showLoading()
+                BaseEvent.DismissLoadingDialog -> hideLoading()
+                is SearchEvent.Success -> showResults(event.movies)
+                is SearchEvent.Error -> showError(event.message)
+                is SearchEvent.MoviesIndexed -> updateLoadedCount(event.total)
             }
         }
     }
 
-    private fun handleShowLoadingDialog() = with(binding) {
+    private fun showLoading() = with(binding) {
         progressBar.visibility = View.VISIBLE
         errorTextView.visibility = View.GONE
         resultsRecyclerView.visibility = View.GONE
     }
 
-    private fun handleSearchSuccess(films: List<TmdbMovie>) = with(binding) {
-        Log.i(TAG, "Event: Search Success with ${films.size} results")
+    private fun hideLoading() = with(binding) { progressBar.visibility = View.GONE }
+
+    private fun showResults(films: List<TmdbMovie>) = with(binding) {
+        Log.i(TAG, "Search Success with ${films.size} results")
         progressBar.visibility = View.GONE
         errorTextView.visibility = View.GONE
         resultsRecyclerView.visibility = View.VISIBLE
-        val adapter = FilmAdapter(films)
-        resultsRecyclerView.adapter = adapter
+        resultsRecyclerView.adapter = FilmAdapter(films)
     }
 
-    private fun handleSearchError(message: String) = with(binding) {
-        Log.i(TAG, "Event: Search Error: $message")
+    private fun showError(message: String) = with(binding) {
+        Log.i(TAG, "Search Error: $message")
         progressBar.visibility = View.GONE
         resultsRecyclerView.visibility = View.GONE
         errorTextView.visibility = View.VISIBLE
         errorTextView.text = message
     }
 
-    private fun handleDismissLoadingDialog() = with(binding) { progressBar.visibility = View.GONE }
+    private fun updateLoadedCount(total: Int) = binding.loadedMoviesCountTextView.run {
+        text = getString(R.string.movies_loaded_and_indexed, total)
+        visibility = View.VISIBLE
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateLoadedCount(LuceneMovieIndexerSingleton.totalMoviesCount)
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
-
-    override fun onResume() {
-        super.onResume()
-        val totalCount = LuceneMovieIndexerSingleton.totalMoviesCount
-        binding.loadedMoviesCountTextView.apply {
-            text = "Movies loaded and indexed: $totalCount"
-            visibility = View.VISIBLE
-        }
-    }
 }
+

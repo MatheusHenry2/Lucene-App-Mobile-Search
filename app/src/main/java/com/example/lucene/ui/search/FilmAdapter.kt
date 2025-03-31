@@ -28,10 +28,12 @@ class FilmAdapter(
     inner class FilmViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val titleTextView: TextView = itemView.findViewById(R.id.titleTextView)
         private val descriptionTextView: TextView = itemView.findViewById(R.id.descriptionTextView)
+        private val releaseDateTextView: TextView = itemView.findViewById(R.id.releaseDateTextView)
 
         fun bind(film: TmdbMovie) {
             titleTextView.text = film.title
             descriptionTextView.text = film.overview
+            releaseDateTextView.text = itemView.context.getString(R.string.release_date_format,  film.releaseDate)
         }
     }
 }

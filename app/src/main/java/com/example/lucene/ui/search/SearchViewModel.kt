@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.example.lucene.data.model.request.TmdbMovie
 import com.example.lucene.data.remote.repository.TMDbRepository
 import com.example.lucene.states.BaseEvent
@@ -57,43 +58,33 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
 
     fun startAction(action: SearchAction) {
         when (action) {
-            is SearchAction.SearchQuery -> doSearch(action.query)
-            is SearchAction.SearchYear  -> doSearchByYear(action.year)
+            is SearchAction.SearchQuery -> searchMovies(action.query)
+            is SearchAction.SearchYear  -> searchMoviesByYear(action.year)
         }
     }
 
-    private fun doSearch(query: String) {
+    private fun searchMovies(query: String) {
+        launchSearchTask { luceneIndexer?.search(query).orEmpty() }
+    }
+
+    private fun searchMoviesByYear(year: String) {
+        launchSearchTask { luceneIndexer?.searchByYear(year).orEmpty() }
+    }
+
+    private fun launchSearchTask(searchOperation: suspend () -> List<TmdbMovie>) {
         setEvent(BaseEvent.ShowLoadingDialog)
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                val results = luceneIndexer?.search(query).orEmpty()
+                val results = searchOperation()
                 withContext(Dispatchers.Main) {
                     setEvent(SearchEvent.Success(results))
-                    setEvent(BaseEvent.DismissLoadingDialog)
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
                 withContext(Dispatchers.Main) {
                     setEvent(SearchEvent.Error("Search failed: ${e.message}"))
-                    setEvent(BaseEvent.DismissLoadingDialog)
                 }
-            }
-        }
-    }
-
-    private fun doSearchByYear(year: String) {
-        setEvent(BaseEvent.ShowLoadingDialog)
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val results = luceneIndexer?.searchByYear(year).orEmpty()
+            } finally {
                 withContext(Dispatchers.Main) {
-                    setEvent(SearchEvent.Success(results))
-                    setEvent(BaseEvent.DismissLoadingDialog)
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                withContext(Dispatchers.Main) {
-                    setEvent(SearchEvent.Error("Search by year failed: ${e.message}"))
                     setEvent(BaseEvent.DismissLoadingDialog)
                 }
             }
@@ -104,3 +95,4 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         _event.value = event
     }
 }
+
