@@ -26,34 +26,21 @@
 
 ## 📁 Project Structure
 
+## 📁 Directory Structure
+
 📦 com.example.lucene  
 ├── data  
 │   ├── model  
 │   │   ├── request  
-│   │   │   └── TMDbRequest.kt  
 │   │   └── response  
-│   │       └── TMDbMovieResponse.kt  
 │   └── remote  
 │       ├── repository  
-│       │   └── TMDbRepository.kt  
 │       └── service  
-│           ├── TMDbApi.kt  
-│           └── TMDbService.kt  
 ├── states  
-│   ├── BaseStates.kt  
-│   └── SearchStates.kt  
 ├── ui  
 │   ├── main  
-│   │   └── MainActivity.kt  
 │   └── search  
-│       ├── FilmAdapter.kt  
-│       ├── SearchFragment.kt  
-│       └── SearchViewModel.kt  
 ├── utils  
-│   ├── AppPreferences.kt  
-│   ├── Constants.kt  
-│   ├── LuceneMovieIndexer.kt  
-│   └── LuceneMovieIndexerSingleton.kt  
-└── worker  
-    └── DownloadMoviesWorker.kt
+└── worker
+
 
