@@ -22,28 +22,28 @@
 
 ## 🗂️ Project Structure
 
+📱 UI
+│   ├── main
+│   └── search
 
-📦 com.example.lucene
-├── 🖼 UI
-│   ├── main (MainActivity)
-│   └── search (Search screen + adapter + ViewModel)
-│
-├── 🧠 State
-│   └── states (Actions, Events)
-│
-├── 📡 Data
+🧠 Business Logic
+│   └── states
+
+📦 Data Layer
 │   ├── model
 │   │   ├── request
 │   │   └── response
 │   └── remote
-│       ├── service (Retrofit)
-│       └── repository (API access logic)
-│
-├── 🛠 Utils
-│   └── (Lucene Indexer, AppPreferences, Constants)
-│
-└── ⏱ Worker
-    └── (Background download/index jobs)
+│       ├── repository
+│       └── service
+
+🔧 Utils
+│   └── (helpers, constants, Lucene indexer...)
+
+⏱ Worker
+│   └── Download and index tasks
+
+
 
 
 
