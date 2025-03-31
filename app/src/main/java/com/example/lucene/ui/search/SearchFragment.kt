@@ -55,9 +55,13 @@ class SearchFragment : Fragment() {
 
             override fun onTextChanged(query: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(query: Editable?) {
-                val finalQuery = query?.toString().orEmpty()
-                Log.i(TAG, "User typed query: $finalQuery")
-                viewModel.startAction(SearchAction.SearchQuery(finalQuery))
+                val query = query?.toString().orEmpty()
+                Log.i(TAG, "User typed query: $query")
+                if (query.all { it.isDigit() } && query.length == 4) {
+                    viewModel.startAction(SearchAction.SearchYear(query))
+                } else {
+                    viewModel.startAction(SearchAction.SearchQuery(query))
+                }
             }
         })
     }

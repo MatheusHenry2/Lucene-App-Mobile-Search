@@ -1,24 +1,22 @@
 package com.example.lucene.utils
 
+import android.util.Log
 import com.example.lucene.data.model.request.TmdbMovie
 import com.example.lucene.utils.Constants.FIELD_ID
 import com.example.lucene.utils.Constants.FIELD_OVERVIEW
 import com.example.lucene.utils.Constants.FIELD_TITLE
+import com.example.lucene.utils.Constants.FIELD_YEAR
+import com.example.lucene.utils.Constants.TAG
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.Document
-import org.apache.lucene.document.Field
 import org.apache.lucene.document.StringField
 import org.apache.lucene.document.TextField
-import org.apache.lucene.index.DirectoryReader
-import org.apache.lucene.index.IndexWriter
-import org.apache.lucene.index.IndexWriterConfig
+import org.apache.lucene.index.*
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser
-import org.apache.lucene.search.IndexSearcher
-import org.apache.lucene.search.Query
-import org.apache.lucene.search.ScoreDoc
-import org.apache.lucene.search.TopDocs
+import org.apache.lucene.search.*
 import org.apache.lucene.store.ByteBuffersDirectory
 import org.apache.lucene.store.Directory
+
 
 class LuceneMovieIndexer(movies: List<TmdbMovie>) {
 
@@ -42,6 +40,9 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
         indexSearcher = IndexSearcher(indexReader)
     }
 
+    /**
+     * Adiciona novos filmes sem perder o índice anterior.
+     */
     fun addMovies(newMovies: List<TmdbMovie>) {
         if (newMovies.isEmpty()) return
 
@@ -62,15 +63,57 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
         }
     }
 
+    /**
+     * Busca que considera TITLE, OVERVIEW e YEAR com boosts.
+     */
     fun search(queryStr: String): List<TmdbMovie> {
         if (queryStr.isBlank()) return emptyList()
 
+        val boosts = mapOf(
+            FIELD_TITLE to 5.0f,
+            FIELD_OVERVIEW to 1.0f,
+        )
         val fields = arrayOf(FIELD_TITLE, FIELD_OVERVIEW)
-        val parser = MultiFieldQueryParser(fields, analyzer)
-        val query: Query = parser.parse(queryStr)
 
-        val topDocs: TopDocs = indexSearcher.search(query, 50)
+        val parser = MultiFieldQueryParser(fields, analyzer, boosts)
+        val query = parser.parse(queryStr)
 
+        val topDocs = indexSearcher.search(query, 50)
+        return topDocsToMovies(topDocs)
+    }
+
+    /**
+     * Busca específica apenas por YEAR exato.
+     */
+    fun searchByYear(year: String): List<TmdbMovie> {
+        if (year.isBlank()) return emptyList()
+
+        // TermQuery para year
+        val termQuery = TermQuery(Term(FIELD_YEAR, year))
+        val topDocs = indexSearcher.search(termQuery, 50)
+
+        return topDocsToMovies(topDocs)
+    }
+
+    /**
+     * Cria Document para cada TmdbMovie.
+     */
+    private fun createDocument(movie: TmdbMovie): Document {
+        val doc = Document()
+        doc.add(StringField(FIELD_ID, movie.id.toString(), org.apache.lucene.document.Field.Store.YES))
+        doc.add(TextField(FIELD_TITLE, movie.title, org.apache.lucene.document.Field.Store.YES))
+        doc.add(TextField(FIELD_OVERVIEW, movie.overview, org.apache.lucene.document.Field.Store.YES))
+        if (!movie.releaseDate.isNullOrBlank() && movie.releaseDate.length >= 4) {
+            val year = movie.releaseDate.take(4)
+            doc.add(StringField(FIELD_YEAR, year, org.apache.lucene.document.Field.Store.YES))
+        }
+        return doc
+    }
+
+    /**
+     * Converte TopDocs para a lista de TmdbMovie.
+     */
+    private fun topDocsToMovies(topDocs: TopDocs): List<TmdbMovie> {
         val results = mutableListOf<TmdbMovie>()
         for (scoreDoc: ScoreDoc in topDocs.scoreDocs) {
             val doc = indexSearcher.doc(scoreDoc.doc)
@@ -85,13 +128,5 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
             )
         }
         return results
-    }
-
-    private fun createDocument(movie: TmdbMovie): Document {
-        return Document().apply {
-            add(StringField(FIELD_ID, movie.id.toString(), Field.Store.YES))
-            add(TextField(FIELD_TITLE, movie.title, Field.Store.YES))
-            add(TextField(FIELD_OVERVIEW, movie.overview, Field.Store.YES))
-        }
     }
 }

@@ -6,5 +6,6 @@ object Constants {
     const val FIELD_ID = "id"
     const val FIELD_TITLE = "title"
     const val FIELD_OVERVIEW = "overview"
+    const val FIELD_YEAR = "year"
 }
 
