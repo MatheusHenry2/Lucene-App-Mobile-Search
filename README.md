@@ -16,3 +16,6 @@
 
 - **LiveData & ViewModel** 🔄  
   *Android architecture components that manage data in a lifecycle-aware manner, helping update the UI based on state changes while separating business logic from the UI.*
+
+  - **WorkManager** 🔄  
+  *A background task scheduler used to periodically download new films from the API and index them, ensuring that the search index remains up-to-date even when the app is running in the background..*
