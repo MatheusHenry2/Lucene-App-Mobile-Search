@@ -24,20 +24,36 @@
 
 ## 🗂️ Project Structure
 
+## 📁 Project Structure
+
 📦 com.example.lucene  
-├── **data**  
-│   ├── **model** – contains API models  
-│   │   ├── `request` – models used for sending/receiving data  
-│   │   └── `response` – response wrappers or paginated data  
-│   ├── **remote** – TMDb API interface  
-│   └── **repository** – handles API interaction logic  
-│  
-├── **ui** – user interface components  
-│   ├── `main` – entry point activity  
-│   └── `search` – search screen fragment, adapter, and logic  
-│  
-├── **states** – defines UI actions and event states  
-│  
-├── **utils** – Lucene indexer, constants, shared preferences, etc.  
-│  
-├── **worker** – background worker to fetch and index new movies
+├── data  
+│   ├── model  
+│   │   ├── request  
+│   │   │   └── TMDbRequest.kt  
+│   │   └── response  
+│   │       └── TMDbMovieResponse.kt  
+│   └── remote  
+│       ├── repository  
+│       │   └── TMDbRepository.kt  
+│       └── service  
+│           ├── TMDbApi.kt  
+│           └── TMDbService.kt  
+├── states  
+│   ├── BaseStates.kt  
+│   └── SearchStates.kt  
+├── ui  
+│   ├── main  
+│   │   └── MainActivity.kt  
+│   └── search  
+│       ├── FilmAdapter.kt  
+│       ├── SearchFragment.kt  
+│       └── SearchViewModel.kt  
+├── utils  
+│   ├── AppPreferences.kt  
+│   ├── Constants.kt  
+│   ├── LuceneMovieIndexer.kt  
+│   └── LuceneMovieIndexerSingleton.kt  
+└── worker  
+    └── DownloadMoviesWorker.kt
+
