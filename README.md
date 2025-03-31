@@ -1,21 +1,19 @@
-# Lucene App Mobile Search 🚀🔍
+Lucene App Mobile Search 🚀🔍
+Technologies Used and Their Concepts
+Android 📱
+The platform used to build the app, manage navigation, and create the user interface.
 
-## Technologies Used and Their Concepts
+Kotlin ⚡
+The primary programming language chosen for its concise syntax, modern features, and enhanced safety.
 
-- **Android** 📱  
-  *The platform used to build the app, manage navigation, and create the user interface.*
+Apache Lucene 🔎
+A full-text search library used to index and perform efficient searches on films.
 
-- **Kotlin** ⚡  
-  *The primary programming language chosen for its concise syntax, modern features, and enhanced safety.*
+Coroutines ⏱
+A tool for asynchronous programming that enables executing background operations (like indexing and search) without blocking the UI.
 
-- **Apache Lucene** 🔎  
-  *A full-text search library used to index and perform efficient searches on film.*
+LiveData & ViewModel 🔄
+Android architecture components that manage data in a lifecycle-aware manner, helping update the UI based on state changes while separating business logic from the UI.
 
-- **Coroutines** ⏱  
-  *A tool for asynchronous programming that enables executing background operations (like indexing and search) without blocking the UI.*
-
-- **LiveData & ViewModel** 🔄  
-  *Android architecture components that manage data in a lifecycle-aware manner, helping update the UI based on state changes while separating business logic from the UI.*
-
-- **WorkManager** 🔄
+WorkManager 🔄
 A background task scheduler used to periodically download new films from the API and index them, ensuring that the search index remains up-to-date even when the app is running in the background.
