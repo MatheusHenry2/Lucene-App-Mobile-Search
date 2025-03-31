@@ -22,28 +22,22 @@
 
 ## 🗂️ Project Structure
 
-📱 UI
+🖼  UI
 │   ├── main
 │   └── search
-
-🧠 Business Logic
+🧠  Business Logic
 │   └── states
-
-📦 Data Layer
+📦  Data Layer
 │   ├── model
 │   │   ├── request
 │   │   └── response
 │   └── remote
 │       ├── repository
 │       └── service
-
-🔧 Utils
+🛠  Utils
 │   └── (helpers, constants, Lucene indexer...)
-
-⏱ Worker
-│   └── Download and index tasks
-
-
+⏱  Worker
+    └── Download and index tasks
 
 
 
