@@ -74,7 +74,7 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
     }
 
     /**
-     * Executes a search query over the index using TITLE and OVERVIEW fields.
+     * Executes a search query over the index using TITLE, OVERVIEW and YEAR fields.
      * Boost values are applied to give higher relevance to the title.
      *
      * @param queryStr The search query as a string.
@@ -85,9 +85,10 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
 
         val boosts = mapOf(
             FIELD_TITLE to 5.0f,
+            FIELD_YEAR to 4.0f,
             FIELD_OVERVIEW to 1.0f
         )
-        val fields = arrayOf(FIELD_TITLE, FIELD_OVERVIEW)
+        val fields = arrayOf(FIELD_TITLE, FIELD_YEAR, FIELD_OVERVIEW)
         val parser = MultiFieldQueryParser(fields, analyzer, boosts)
         val query = parser.parse(queryStr)
 
