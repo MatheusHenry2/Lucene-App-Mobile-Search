@@ -64,4 +64,7 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     // Converter Gson to Objects Json
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    //Gson
+    implementation ("com.google.code.gson:gson:2.8.8")
 }

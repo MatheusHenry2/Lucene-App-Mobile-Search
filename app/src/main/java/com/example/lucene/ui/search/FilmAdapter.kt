@@ -29,11 +29,15 @@ class FilmAdapter(
         private val titleTextView: TextView = itemView.findViewById(R.id.titleTextView)
         private val descriptionTextView: TextView = itemView.findViewById(R.id.descriptionTextView)
         private val releaseDateTextView: TextView = itemView.findViewById(R.id.releaseDateTextView)
+        private val actorsTextView: TextView = itemView.findViewById(R.id.actorsTextView)
+        private val genresTextView: TextView = itemView.findViewById(R.id.movieGenres)
 
         fun bind(film: TmdbMovie) {
             titleTextView.text = film.title
             descriptionTextView.text = film.overview
-            releaseDateTextView.text = itemView.context.getString(R.string.release_date_format,  film.releaseDate)
+            releaseDateTextView.text = itemView.context.getString(R.string.release_date_format, film.releaseDate)
+            actorsTextView.text = film.actors.joinToString(", ") // Exibe os atores
+            genresTextView.text = film.genres.joinToString(", ") // Exibe os gêneros
         }
     }
 }

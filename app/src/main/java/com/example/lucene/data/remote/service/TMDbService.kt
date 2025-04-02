@@ -1,7 +1,10 @@
 package com.example.lucene.data.remote.service
 
+import com.example.lucene.data.model.response.CastResponse
+import com.example.lucene.data.model.response.MovieDetailsResponse
 import com.example.lucene.data.model.response.TMDbMovieResponse
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface TMDbService {
@@ -18,5 +21,17 @@ interface TMDbService {
         @Query(TMDbConstants.QUERY_API_KEY) apiKey: String,
         @Query(TMDbConstants.QUERY_PAGE) page: Int = 1
     ): TMDbMovieResponse
+
+    @GET("movie/{movie_id}/credits")
+    suspend fun getMovieCast(
+        @Path("movie_id") movieId: Int,
+        @Query("api_key") apiKey: String
+    ): CastResponse
+
+    @GET("movie/{movie_id}")
+    suspend fun getMovieDetails(
+        @Path("movie_id") movieId: Int,
+        @Query("api_key") apiKey: String
+    ): MovieDetailsResponse
 
 }

@@ -29,4 +29,23 @@
         android:layout_height="wrap_content"
         android:textColor="@android:color/holo_blue_dark"
         android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/actorsTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Actors"
+        android:layout_marginTop="8dp" />
+
+    <TextView
+        android:id="@+id/movieGenres"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Genres:"
+        android:textSize="14sp"
+        android:textStyle="italic"
+        android:layout_marginTop="4dp"
+        android:textColor="@android:color/darker_gray" />
+
+
 </LinearLayout>

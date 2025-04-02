@@ -1,6 +1,7 @@
 package com.example.lucene.ui.search
 
 import android.app.Application
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -14,17 +15,20 @@ import com.example.lucene.states.SearchEvent
 import com.example.lucene.utils.Constants.TAG
 import com.example.lucene.utils.LuceneMovieIndexer
 import com.example.lucene.utils.LuceneMovieIndexerSingleton
+import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import saveMoviesToJson
+import java.io.File
 
 class SearchViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _event = MutableLiveData<BaseEvent>()
     val event: LiveData<BaseEvent> get() = _event
-
-    private val tmdbRepository = TMDbRepository()
     private var luceneIndexer: LuceneMovieIndexer? = null
 
     init {
@@ -34,32 +38,50 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     private fun loadAndIndexPopularMovies() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = tmdbRepository.getPopularMovies()
-                val movies = response.results
-                Log.d(TAG, "Movies loaded: ${movies.joinToString(separator = ", ") { "(${it.title})" }}")
+                val movies = loadMoviesFromAssets(getApplication()) // Carrega os filmes salvos no arquivo
+                Log.d(TAG, "Movies loaded from file: ${movies.joinToString(separator = ", ") { "(${it.title})" }}")
 
-                luceneIndexer = LuceneMovieIndexer(movies)
-                LuceneMovieIndexerSingleton.indexer = luceneIndexer
-                LuceneMovieIndexerSingleton.totalMoviesCount = movies.size
-
-                withContext(Dispatchers.Main) {
-                    setEvent(SearchEvent.MoviesIndexed(movies.size))
-                    setEvent(SearchEvent.Success(emptyList()))
-                    Log.i(TAG, "Movies loaded and indexed successfully")
+                if (movies.isNotEmpty()) {
+                    luceneIndexer = LuceneMovieIndexer(movies)
+                    LuceneMovieIndexerSingleton.indexer = luceneIndexer
+                    LuceneMovieIndexerSingleton.totalMoviesCount = movies.size
+                    withContext(Dispatchers.Main) {
+                        setEvent(SearchEvent.MoviesIndexed(movies.size))
+                        setEvent(SearchEvent.Success(emptyList()))
+                        Log.i(TAG, "Movies loaded and indexed successfully")
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        setEvent(SearchEvent.Error("No movies found in file"))
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    setEvent(SearchEvent.Error("Failed to load popular movies: ${e.message}"))
+                    setEvent(SearchEvent.Error("Failed to load and index movies: ${e.message}"))
                 }
             }
         }
     }
 
+
+    private fun loadMoviesFromAssets(context: Context): List<TmdbMovie> {
+        return try {
+            val inputStream = context.assets.open("movies_data.json")
+            val json = inputStream.bufferedReader().use { it.readText() }
+            val gson = Gson()
+            gson.fromJson(json, Array<TmdbMovie>::class.java).toList()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+
     fun startAction(action: SearchAction) {
         when (action) {
             is SearchAction.SearchQuery -> searchMovies(action.query)
-            is SearchAction.SearchYear  -> searchMoviesByYear(action.year)
+            is SearchAction.SearchYear -> searchMoviesByYear(action.year)
         }
     }
 

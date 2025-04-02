@@ -82,18 +82,29 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
      */
     fun search(queryStr: String): List<TmdbMovie> {
         if (queryStr.isBlank()) return emptyList()
-
-        val boosts = mapOf(
-            FIELD_TITLE to 5.0f,
-            FIELD_YEAR to 4.0f,
-            FIELD_OVERVIEW to 1.0f
+        //verificar o boolean query para categoria de nomes de atores
+        //pensando em buscar fuzzy querie.
+        val boosts = mapOf(         //the 2025
+            FIELD_TITLE to 5.0f, // the king kong 2025
+            FIELD_YEAR to 4.0f, //remover o boost pra verificar se o matrix
+            FIELD_OVERVIEW to 1.0f //pensar em remover stop words pode trazer coisa irrelevante
         )
         val fields = arrayOf(FIELD_TITLE, FIELD_YEAR, FIELD_OVERVIEW)
         val parser = MultiFieldQueryParser(fields, analyzer, boosts)
         val query = parser.parse(queryStr)
 
-        val topDocs = indexSearcher.search(query, 10)
+        val topDocs = indexSearcher.search(query, 10) //pensar em aumentar (30)
         return topDocsToMovies(topDocs)
+
+        //pensar em reomendaçoes de filme quando nao exisitr busca
+        //com o woorker para recomendar.
+
+        //pensar em um botao q desliga o rankeamento, q aplica os boosts
+        //pra comparacao.
+
+        //estudar facets para nosso projeto, estudar para agrupar pela categoria
+
+        // pensar em trocar o multi field para usar campos diferentes com outros analisadores diferentes
     }
 
     /**
@@ -124,6 +135,8 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
         doc.add(StringField(FIELD_ID, movie.id.toString(), Field.Store.YES))
         doc.add(TextField(FIELD_TITLE, movie.title, Field.Store.YES))
         doc.add(TextField(FIELD_OVERVIEW, movie.overview, Field.Store.YES))
+        doc.add(TextField("actors", movie.actors.joinToString(", "), Field.Store.YES))
+        doc.add(TextField("genres", movie.genres.joinToString(", "), Field.Store.YES))
 
         if (!movie.releaseDate.isNullOrBlank()) {
             if (movie.releaseDate.length >= 4) {
@@ -146,16 +159,23 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
         for (scoreDoc: ScoreDoc in topDocs.scoreDocs) {
             val doc = indexSearcher.doc(scoreDoc.doc)
             val storedReleaseDate = doc.get("releaseDateFull") ?: ""
+            val storedActors = doc.get("actors")?.split(", ") ?: emptyList()
+            val storedGenres = doc.get("genres")?.split(", ") ?: emptyList() // Obtendo os gêneros
+
             results.add(
                 TmdbMovie(
                     id = doc.get(FIELD_ID)?.toIntOrNull() ?: 0,
                     title = doc.get(FIELD_TITLE) ?: "",
                     overview = doc.get(FIELD_OVERVIEW) ?: "",
                     releaseDate = storedReleaseDate,
-                    posterPath = null
+                    posterPath = null,
+                    actors = storedActors,
+                    genres = storedGenres // Atribuindo os gêneros
                 )
             )
         }
         return results
     }
+
+
 }

@@ -20,13 +20,13 @@ class MainActivity : AppCompatActivity() {
                 .replace(R.id.fragmentContainer, SearchFragment())
                 .commit()
         }
-        scheduleDownloadMoviesWorker()
+//        scheduleDownloadMoviesWorker()
     }
 
-    private fun scheduleDownloadMoviesWorker() {
-        val workerRequest = OneTimeWorkRequestBuilder<DownloadMoviesWorker>()
-            .setInitialDelay(15, TimeUnit.SECONDS)
-            .build()
-        WorkManager.getInstance(this).enqueue(workerRequest)
-    }
+//    private fun scheduleDownloadMoviesWorker() {
+//        val workerRequest = OneTimeWorkRequestBuilder<DownloadMoviesWorker>()
+//            .setInitialDelay(15, TimeUnit.SECONDS)
+//            .build()
+//        WorkManager.getInstance(this).enqueue(workerRequest)
+//    }
 }
