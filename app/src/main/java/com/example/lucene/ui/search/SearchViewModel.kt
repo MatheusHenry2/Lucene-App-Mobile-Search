@@ -25,6 +25,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     private val _event = MutableLiveData<BaseEvent>()
     val event: LiveData<BaseEvent> get() = _event
     private var luceneIndexer: LuceneMovieIndexer? = null
+    var useBoosts = true
 
     init {
         loadAndIndexPopularMovies()
@@ -34,7 +35,10 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val movies = loadMoviesFromAssets(getApplication())
-                Log.d(TAG, "Movies loaded from file: ${movies.joinToString(separator = ", ") { "(${it.title})" }}")
+                Log.d(
+                    TAG,
+                    "Movies loaded from file: ${movies.joinToString(separator = ", ") { "(${it.title})" }}"
+                )
 
                 if (movies.isNotEmpty()) {
                     luceneIndexer = LuceneMovieIndexer(movies)
@@ -59,7 +63,6 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-
     private fun loadMoviesFromAssets(context: Context): List<TmdbMovie> {
         return try {
             val inputStream = context.assets.open("movies_data.json")
@@ -72,12 +75,24 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-
     fun startAction(action: SearchAction) {
         when (action) {
-            is SearchAction.SearchQuery -> searchMovies(action.query)
+            is SearchAction.SearchQuery -> startSearch(action.query)
             is SearchAction.SearchYear -> searchMoviesByYear(action.year)
+            is SearchAction.ToggleBoostAction -> toggleBoosts()
         }
+    }
+
+    private fun startSearch(query: String) {
+        if (useBoosts) {
+            searchMovies(query)
+        } else {
+            searchMoviesWithoutBoost(query)
+        }
+    }
+
+    private fun searchMoviesWithoutBoost(query: String) {
+        launchSearchTask { luceneIndexer?.searchWithoutBoost(query).orEmpty() }
     }
 
     private fun searchMovies(query: String) {
@@ -110,6 +125,12 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
 
     private fun setEvent(event: BaseEvent) {
         _event.value = event
+    }
+
+    private fun toggleBoosts() {
+        useBoosts = !useBoosts
+        Log.d(TAG, "toggleBoosts:  ${if (useBoosts) "Activated" else "Disabled"}")
+
     }
 }
 

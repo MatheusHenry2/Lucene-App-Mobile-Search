@@ -110,6 +110,20 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
         // pensar em trocar o multi field para usar campos diferentes com outros analisadores diferentes
     }
 
+    fun searchWithoutBoost(queryStr: String): List<TmdbMovie> {
+        if (queryStr.isBlank()) return emptyList()
+
+        // Não define os boosts aqui
+        val fields = arrayOf(FIELD_TITLE, FIELD_YEAR, FIELD_OVERVIEW)
+        val parser = MultiFieldQueryParser(fields, analyzer)
+        val query = parser.parse(queryStr)
+
+        // Executa a busca sem boosts
+        val topDocs = indexSearcher.search(query, 30)
+        return topDocsToMovies(topDocs)
+    }
+
+
     /**
      * Executes a search query that matches movies by an exact release year.
      *

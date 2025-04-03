@@ -36,6 +36,7 @@ class SearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
         setupSearchListener()
+        setupSmartQueryButton()
         observeViewModelEvents()
     }
 
@@ -93,6 +94,23 @@ class SearchFragment : Fragment() {
         resultsRecyclerView.visibility = View.GONE
         errorTextView.visibility = View.VISIBLE
         errorTextView.text = message
+    }
+
+    private fun setupSmartQueryButton() = with(binding) {
+        updateSmartQueryButtonColor()
+        smartQueryButton.setOnClickListener {
+            viewModel.startAction(SearchAction.ToggleBoostAction)
+            updateSmartQueryButtonColor()
+            viewModel.startAction(SearchAction.SearchQuery(searchEditText.text.toString().trim()))
+        }
+    }
+
+    private fun updateSmartQueryButtonColor() = with(binding){
+        if (viewModel.useBoosts) {
+            smartQueryButton.setBackgroundColor(resources.getColor(R.color.enabledColor))
+        } else {
+            smartQueryButton.setBackgroundColor(resources.getColor(R.color.disabledColor))
+        }
     }
 
     private fun updateLoadedCount(total: Int) = binding.loadedMoviesCountTextView.run {
