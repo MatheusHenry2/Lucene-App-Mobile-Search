@@ -46,18 +46,12 @@ class DownloadMoviesWorker(
                 val movieDetails = repository.getMovieDetails(movie.id)
                 movie.genres = movieDetails.genres.map { genre -> genre.name }
             }
-
-            // Salvar os filmes com atores em JSON
-//            saveMoviesToJson(applicationContext, newMovies)
-
-            // Indexa os filmes com os atores
             val indexer = LuceneMovieIndexerSingleton.indexer
             indexer?.addMovies(newMovies)
 
             LuceneMovieIndexerSingleton.totalMoviesCount += newMovies.size
             Log.d(TAG, "Total movies indexed so far = ${LuceneMovieIndexerSingleton.totalMoviesCount}")
 
-            // Configura o próximo trabalho para a próxima página
             val nextRequest = OneTimeWorkRequestBuilder<DownloadMoviesWorker>()
                 .setInitialDelay(10, TimeUnit.SECONDS)
                 .build()
