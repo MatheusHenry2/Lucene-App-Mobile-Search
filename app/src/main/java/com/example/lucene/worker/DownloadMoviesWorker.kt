@@ -12,7 +12,6 @@ import com.example.lucene.utils.Constants.TAG
 import com.example.lucene.utils.LuceneMovieIndexerSingleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import saveMoviesToJson
 import java.util.concurrent.TimeUnit
 
 class DownloadMoviesWorker(
@@ -49,7 +48,7 @@ class DownloadMoviesWorker(
             }
 
             // Salvar os filmes com atores em JSON
-            saveMoviesToJson(applicationContext, newMovies)
+//            saveMoviesToJson(applicationContext, newMovies)
 
             // Indexa os filmes com os atores
             val indexer = LuceneMovieIndexerSingleton.indexer

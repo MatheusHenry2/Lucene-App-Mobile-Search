@@ -59,4 +59,13 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:visibility="gone" />
+
+    <Button
+        android:id="@+id/smartQueryButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Smart Query"
+        android:layout_marginBottom="parent"
+        android:layout_marginTop="16dp" />
+
 </LinearLayout>

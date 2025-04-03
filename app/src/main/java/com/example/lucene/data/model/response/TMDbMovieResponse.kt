@@ -1,6 +1,5 @@
 package com.example.lucene.data.model.response
 
-import com.example.lucene.data.model.request.TmdbMovie
 import com.google.gson.annotations.SerializedName
 
 data class TMDbMovieResponse(

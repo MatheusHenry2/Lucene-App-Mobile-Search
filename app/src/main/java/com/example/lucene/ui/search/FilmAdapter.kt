@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lucene.R
-import com.example.lucene.data.model.request.TmdbMovie
+import com.example.lucene.data.model.response.TmdbMovie
 
 class FilmAdapter(
     private val films: List<TmdbMovie>
@@ -36,8 +36,8 @@ class FilmAdapter(
             titleTextView.text = film.title
             descriptionTextView.text = film.overview
             releaseDateTextView.text = itemView.context.getString(R.string.release_date_format, film.releaseDate)
-            actorsTextView.text = film.actors.joinToString(", ") // Exibe os atores
-            genresTextView.text = film.genres.joinToString(", ") // Exibe os gêneros
+            actorsTextView.text = film.actors.joinToString(", ")
+            genresTextView.text = film.genres.joinToString(", ")
         }
     }
 }

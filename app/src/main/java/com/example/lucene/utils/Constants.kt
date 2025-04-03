@@ -7,5 +7,8 @@ object Constants {
     const val FIELD_TITLE = "title"
     const val FIELD_OVERVIEW = "overview"
     const val FIELD_YEAR = "year"
+    const val FIELD_ACTORS = "actors"
+    const val FIELD_GENRES = "genres"
+    const val FIELD_RELEASE_DATE_FULL = "releaseDateFull"
 }
 

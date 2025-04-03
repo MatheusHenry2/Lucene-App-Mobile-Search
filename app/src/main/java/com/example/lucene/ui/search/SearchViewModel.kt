@@ -7,8 +7,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.lucene.data.model.request.TmdbMovie
-import com.example.lucene.data.remote.repository.TMDbRepository
+import com.example.lucene.data.model.response.TmdbMovie
 import com.example.lucene.states.BaseEvent
 import com.example.lucene.states.SearchAction
 import com.example.lucene.states.SearchEvent
@@ -18,12 +17,8 @@ import com.example.lucene.utils.LuceneMovieIndexerSingleton
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import saveMoviesToJson
-import java.io.File
 
 class SearchViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -38,7 +33,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     private fun loadAndIndexPopularMovies() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val movies = loadMoviesFromAssets(getApplication()) // Carrega os filmes salvos no arquivo
+                val movies = loadMoviesFromAssets(getApplication())
                 Log.d(TAG, "Movies loaded from file: ${movies.joinToString(separator = ", ") { "(${it.title})" }}")
 
                 if (movies.isNotEmpty()) {

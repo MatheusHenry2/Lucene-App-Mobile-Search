@@ -1,6 +1,6 @@
 package com.example.lucene.states
 
-import com.example.lucene.data.model.request.TmdbMovie
+import com.example.lucene.data.model.response.TmdbMovie
 
 sealed class SearchAction {
     data class SearchQuery(val query: String) : SearchAction()

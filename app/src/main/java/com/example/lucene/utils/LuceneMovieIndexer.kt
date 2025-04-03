@@ -1,8 +1,11 @@
 package com.example.lucene.utils
 
-import com.example.lucene.data.model.request.TmdbMovie
+import com.example.lucene.data.model.response.TmdbMovie
+import com.example.lucene.utils.Constants.FIELD_ACTORS
+import com.example.lucene.utils.Constants.FIELD_GENRES
 import com.example.lucene.utils.Constants.FIELD_ID
 import com.example.lucene.utils.Constants.FIELD_OVERVIEW
+import com.example.lucene.utils.Constants.FIELD_RELEASE_DATE_FULL
 import com.example.lucene.utils.Constants.FIELD_TITLE
 import com.example.lucene.utils.Constants.FIELD_YEAR
 import org.apache.lucene.analysis.standard.StandardAnalyzer
@@ -93,7 +96,7 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
         val parser = MultiFieldQueryParser(fields, analyzer, boosts)
         val query = parser.parse(queryStr)
 
-        val topDocs = indexSearcher.search(query, 10) //pensar em aumentar (30)
+        val topDocs = indexSearcher.search(query, 30) //pensar em aumentar (30)
         return topDocsToMovies(topDocs)
 
         //pensar em reomendaçoes de filme quando nao exisitr busca
@@ -118,7 +121,7 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
 
         // Build a TermQuery on the YEAR field.
         val termQuery = TermQuery(Term(FIELD_YEAR, year))
-        val topDocs = indexSearcher.search(termQuery, 10)
+        val topDocs = indexSearcher.search(termQuery, 30)
 
         return topDocsToMovies(topDocs)
     }
@@ -135,15 +138,15 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
         doc.add(StringField(FIELD_ID, movie.id.toString(), Field.Store.YES))
         doc.add(TextField(FIELD_TITLE, movie.title, Field.Store.YES))
         doc.add(TextField(FIELD_OVERVIEW, movie.overview, Field.Store.YES))
-        doc.add(TextField("actors", movie.actors.joinToString(", "), Field.Store.YES))
-        doc.add(TextField("genres", movie.genres.joinToString(", "), Field.Store.YES))
+        doc.add(TextField(FIELD_ACTORS, movie.actors.joinToString(", "), Field.Store.YES))
+        doc.add(TextField(FIELD_GENRES, movie.genres.joinToString(", "), Field.Store.YES))
 
         if (!movie.releaseDate.isNullOrBlank()) {
             if (movie.releaseDate.length >= 4) {
                 val year = movie.releaseDate.take(4)
                 doc.add(StringField(FIELD_YEAR, year, Field.Store.YES))
             }
-            doc.add(StringField("releaseDateFull", movie.releaseDate, Field.Store.YES))
+            doc.add(StringField(FIELD_RELEASE_DATE_FULL, movie.releaseDate, Field.Store.YES))
         }
         return doc
     }
@@ -158,9 +161,10 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
         val results = mutableListOf<TmdbMovie>()
         for (scoreDoc: ScoreDoc in topDocs.scoreDocs) {
             val doc = indexSearcher.doc(scoreDoc.doc)
-            val storedReleaseDate = doc.get("releaseDateFull") ?: ""
-            val storedActors = doc.get("actors")?.split(", ") ?: emptyList()
-            val storedGenres = doc.get("genres")?.split(", ") ?: emptyList() // Obtendo os gêneros
+
+            val storedReleaseDate = doc.get(FIELD_RELEASE_DATE_FULL) ?: ""
+            val storedActors = doc.get(FIELD_ACTORS)?.split(", ") ?: emptyList()
+            val storedGenres = doc.get(FIELD_GENRES)?.split(", ") ?: emptyList()
 
             results.add(
                 TmdbMovie(
@@ -170,12 +174,11 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
                     releaseDate = storedReleaseDate,
                     posterPath = null,
                     actors = storedActors,
-                    genres = storedGenres // Atribuindo os gêneros
+                    genres = storedGenres
                 )
             )
         }
         return results
     }
-
-
 }
+

@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.lucene.R
-import com.example.lucene.data.model.request.TmdbMovie
+import com.example.lucene.data.model.response.TmdbMovie
 import com.example.lucene.databinding.FragmentSearchBinding
 import com.example.lucene.states.BaseEvent
 import com.example.lucene.states.SearchAction
