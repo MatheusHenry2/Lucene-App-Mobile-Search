@@ -6,6 +6,7 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Barra de pesquisa -->
     <LinearLayout
         android:id="@+id/searchBarContainer"
         android:layout_width="match_parent"
@@ -37,6 +38,54 @@
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:text="Smart Query" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/genreFilterContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp"
+        android:gravity="center_horizontal"
+        android:weightSum="3">
+
+        <Button
+            android:id="@+id/btnSciFi"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:text="Fiction"
+            android:background="@drawable/button_selector"
+            android:textColor="@android:color/white"
+            android:padding="12dp"
+            android:textSize="14sp"
+            android:onClick="onGenreFilterClicked" />
+
+        <Button
+            android:id="@+id/btnAdventure"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:text="Adventure"
+            android:background="@drawable/button_selector"
+            android:textColor="@android:color/white"
+            android:padding="12dp"
+            android:textSize="14sp"
+            android:onClick="onGenreFilterClicked" />
+
+        <Button
+            android:id="@+id/btnAction"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Action"
+            android:background="@drawable/button_selector"
+            android:textColor="@android:color/white"
+            android:padding="12dp"
+            android:textSize="14sp"
+            android:onClick="onGenreFilterClicked" />
 
     </LinearLayout>
 
@@ -70,5 +119,4 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:visibility="gone" />
-
 </LinearLayout>

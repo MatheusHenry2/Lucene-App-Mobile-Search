@@ -10,5 +10,8 @@ object Constants {
     const val FIELD_ACTORS = "actors"
     const val FIELD_GENRES = "genres"
     const val FIELD_RELEASE_DATE_FULL = "releaseDateFull"
+    const val SCI_FI_GENRE = "Science Fiction"
+    const val ADVENTURE_GENRE = "Adventure"
+    const val ACTION_GENRE = "Action"
 }
 

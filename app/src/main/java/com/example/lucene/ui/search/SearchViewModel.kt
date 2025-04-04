@@ -80,6 +80,14 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             is SearchAction.SearchQuery -> startSearch(action.query)
             is SearchAction.SearchYear -> searchMoviesByYear(action.year)
             is SearchAction.ToggleBoostAction -> toggleBoosts()
+            is SearchAction.SearchQueryWithGenres -> searchMoviesWithGenres(action.query, action.selectedGenres)
+
+        }
+    }
+
+    private fun searchMoviesWithGenres(query: String, selectedGenres: Set<String>) {
+        launchSearchTask {
+            luceneIndexer?.searchWithGenres(query, selectedGenres).orEmpty()
         }
     }
 

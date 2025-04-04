@@ -4,4 +4,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="enabledColor">#6200EE</color>
     <color name="disabledColor">#B0BEC5</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">#6200EE</color>
+    <color name="colorPrimaryDark">#3700B3</color>
 </resources>

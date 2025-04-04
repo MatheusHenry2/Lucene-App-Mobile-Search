@@ -24,6 +24,7 @@ import org.apache.lucene.search.BooleanClause
 import org.apache.lucene.search.BooleanQuery
 import org.apache.lucene.search.BoostQuery
 import org.apache.lucene.search.IndexSearcher
+import org.apache.lucene.search.PrefixQuery
 import org.apache.lucene.search.ScoreDoc
 import org.apache.lucene.search.TermQuery
 import org.apache.lucene.search.TopDocs
@@ -31,15 +32,6 @@ import org.apache.lucene.store.ByteBuffersDirectory
 import org.apache.lucene.store.Directory
 import java.text.Normalizer
 
-/**
- * LuceneMovieIndexer is responsible for indexing TmdbMovie objects
- * and executing search queries on the indexed data.
- *
- * It builds a Lucene index using a list of movies and provides methods to:
- * - Add new movies without losing the existing index.
- * - Search movies by general text query (using TITLE and OVERVIEW fields).
- * - Search movies by an exact year query.
- */
 class LuceneMovieIndexer(movies: List<TmdbMovie>) {
     private val analyzer = StandardAnalyzer()
     private val directory: Directory = ByteBuffersDirectory()
@@ -85,75 +77,36 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
         }
     }
 
-    /**
-     * Executes a search query over the index using TITLE, OVERVIEW and YEAR fields.
-     * Boost values are applied to give higher relevance to the title.
-     *
-     * @param queryStr The search query as a string.
-     * @return A list of TmdbMovie objects matching the query.
-     */
-
-//    fun search(queryStr: String): List<TmdbMovie> {
-//        val normalizedQuery = normalizingQuery(queryStr) // This will remove accents in the word.
-//        Log.d(TAG, "query normalized: $normalizedQuery")
-//        if (normalizedQuery.isBlank()) return emptyList()
-//        //verificar o boolean query para categoria de nomes de atores
-//        //pensando em buscar fuzzy querie.
-//        val boosts = mapOf(
-//            //the 2025
-//            FIELD_TITLE to 5.0f, // the king kong 2025
-//            FIELD_YEAR to 4.0f,
-//        )
-//        val fields = arrayOf(FIELD_TITLE, FIELD_YEAR)
-//        val parser = MultiFieldQueryParser(fields, analyzer, boosts)
-//        val query = parser.parse(normalizedQuery)
-//        Log.d(TAG, "query parse: $query")
-//
-//        val topDocs = indexSearcher.search(query, 30)
-//        return topDocsToMovies(topDocs)
-//        //pensar em reomendaçoes de filme quando nao exisitr busca
-//        //com o woorker para recomendar.
-//
-//        //estudar facets para nosso projeto, estudar para agrupar pela categoria
-//
-//        // pensar em trocar o multi field para usar campos diferentes com outros analisadores diferentes
-//    }
-
-
     fun search(queryStr: String): List<TmdbMovie> {
         val normalizedQuery = normalizingQuery(queryStr) // Normalizar a consulta (remover acentos, etc.)
         Log.d(TAG, "query normalized: $normalizedQuery")
         if (normalizedQuery.isBlank()) return emptyList()
 
-        // Definir boosts para título, ano, etc.
         val boosts = mapOf(
-            FIELD_TITLE to 8.0f,   // Títulos têm maior relevância
-            FIELD_YEAR to 4.0f,    // O ano também é importante
-            FIELD_ACTORS to 2.0f,  // Boost para atores
-            FIELD_GENRES to 2.0f   // Boost para gêneros
+            FIELD_TITLE to 8.0f,
+            FIELD_YEAR to 4.0f,
+            FIELD_ACTORS to 3.0f,
+            FIELD_GENRES to 2.0f
         )
 
-        // Usar um BooleanQuery para atores e outros campos
         val booleanQuery = BooleanQuery.Builder()
 
-        // 1. Campo Título - Fuzzy Query para permitir erros de digitação
-        val titleQuery = QueryParser(FIELD_TITLE, analyzer).parse("$normalizedQuery~")  // Fuzzy para o título
-        val boostedTitleQuery = BoostQuery(titleQuery, boosts[FIELD_TITLE] ?: 1.0f)  // Aplicando boost no título
-        booleanQuery.add(boostedTitleQuery, BooleanClause.Occur.SHOULD)
+        val prefixQuery = PrefixQuery(Term(FIELD_TITLE, normalizedQuery)) //prefix para o title
+        val fuzzyTitleQuery = QueryParser(FIELD_TITLE, analyzer).parse("$normalizedQuery~")  // Fuzzy para o title
 
-        // 2. Campo Ano - Busca exata no ano
+        booleanQuery.add(BoostQuery(prefixQuery, boosts[FIELD_TITLE] ?: 1.0f), BooleanClause.Occur.SHOULD)
+        booleanQuery.add(BoostQuery(fuzzyTitleQuery, boosts[FIELD_TITLE] ?: 1.0f), BooleanClause.Occur.SHOULD)
+
         val yearQuery = QueryParser(FIELD_YEAR, analyzer).parse(normalizedQuery)
-        val boostedYearQuery = BoostQuery(yearQuery, boosts[FIELD_YEAR] ?: 1.0f)  // Aplicando boost no ano
+        val boostedYearQuery = BoostQuery(yearQuery, boosts[FIELD_YEAR] ?: 1.0f)
         booleanQuery.add(boostedYearQuery, BooleanClause.Occur.SHOULD)
 
-        // 3. Campo Atores - Fuzzy Query para permitir erros de digitação nos nomes dos atores
-        val actorQuery = QueryParser(FIELD_ACTORS, analyzer).parse("$normalizedQuery~")  // Fuzzy para atores
-        val boostedActorQuery = BoostQuery(actorQuery, boosts[FIELD_ACTORS] ?: 1.0f)  // Aplicando boost nos atores
+        val actorQuery = QueryParser(FIELD_ACTORS, analyzer).parse("$normalizedQuery~")  // Fuzzy para actors
+        val boostedActorQuery = BoostQuery(actorQuery, boosts[FIELD_ACTORS] ?: 1.0f)
         booleanQuery.add(boostedActorQuery, BooleanClause.Occur.SHOULD)
 
-        // 4. Campo Gêneros - Busca simples por gênero
         val genreQuery = QueryParser(FIELD_GENRES, analyzer).parse(normalizedQuery)
-        val boostedGenreQuery = BoostQuery(genreQuery, boosts[FIELD_GENRES] ?: 1.0f)  // Aplicando boost nos gêneros
+        val boostedGenreQuery = BoostQuery(genreQuery, boosts[FIELD_GENRES] ?: 1.0f)
         booleanQuery.add(boostedGenreQuery, BooleanClause.Occur.SHOULD)
 
         val topDocs = indexSearcher.search(booleanQuery.build(), 30)
@@ -165,19 +118,6 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
         return normalized.replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
     }
 
-//    fun searchWithoutBoost(queryStr: String): List<TmdbMovie> {
-//        if (queryStr.isBlank()) return emptyList()
-//
-//        // Não define os boosts aqui
-//        val fields = arrayOf(FIELD_TITLE, FIELD_YEAR, FIELD_OVERVIEW)
-//        val parser = MultiFieldQueryParser(fields, analyzer)
-//        val query = parser.parse(queryStr)
-//
-//        // Executa a busca sem boosts
-//        val topDocs = indexSearcher.search(query, 30)
-//        return topDocsToMovies(topDocs)
-//    }
-
     fun searchWithoutBoost(queryStr: String): List<TmdbMovie> {
         val normalizedQuery = normalizingQuery(queryStr)
         Log.d(TAG, "query normalized: $normalizedQuery")
@@ -185,13 +125,16 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
 
         val booleanQuery = BooleanQuery.Builder()
 
-        val titleQuery = QueryParser(FIELD_TITLE, analyzer).parse("$normalizedQuery~")  // Fuzzy para o título
-        booleanQuery.add(titleQuery, BooleanClause.Occur.SHOULD)
+        val prefixQuery = PrefixQuery(Term(FIELD_TITLE, normalizedQuery)) // PrefixQuery para o title
+        val fuzzyTitleQuery = QueryParser(FIELD_TITLE, analyzer).parse("$normalizedQuery~") // Fuzzy para o title
+
+        booleanQuery.add(prefixQuery, BooleanClause.Occur.SHOULD)
+        booleanQuery.add(fuzzyTitleQuery, BooleanClause.Occur.SHOULD)
 
         val yearQuery = QueryParser(FIELD_YEAR, analyzer).parse(normalizedQuery)
         booleanQuery.add(yearQuery, BooleanClause.Occur.SHOULD)
 
-        val actorQuery = QueryParser(FIELD_ACTORS, analyzer).parse("$normalizedQuery~")  // Fuzzy para atores
+        val actorQuery = QueryParser(FIELD_ACTORS, analyzer).parse("$normalizedQuery~") // Fuzzy para actors
         booleanQuery.add(actorQuery, BooleanClause.Occur.SHOULD)
 
         val genreQuery = QueryParser(FIELD_GENRES, analyzer).parse(normalizedQuery)
@@ -201,12 +144,6 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
         return topDocsToMovies(topDocs)
     }
 
-    /**
-     * Executes a search query that matches movies by an exact release year.
-     *
-     * @param year The release year to search for.
-     * @return A list of TmdbMovie objects that have the specified release year.
-     */
     fun searchByYear(year: String): List<TmdbMovie> {
         if (year.isBlank()) return emptyList()
 
@@ -271,5 +208,25 @@ class LuceneMovieIndexer(movies: List<TmdbMovie>) {
         }
         return results
     }
+
+    fun searchWithGenres(queryStr: String, selectedGenres: Set<String>): List<TmdbMovie> {
+        val normalizedQuery = normalizingQuery(queryStr)
+        Log.d(TAG, "query normalized: $normalizedQuery")
+        if (normalizedQuery.isBlank()) return emptyList()
+
+        val booleanQuery = BooleanQuery.Builder()
+
+        val titleQuery = QueryParser(FIELD_TITLE, analyzer).parse("$normalizedQuery~")
+        booleanQuery.add(titleQuery, BooleanClause.Occur.SHOULD)
+
+        selectedGenres.forEach { genre ->
+            val genreQuery = QueryParser(FIELD_GENRES, analyzer).parse(genre)
+            booleanQuery.add(genreQuery, BooleanClause.Occur.MUST)
+        }
+
+        val topDocs = indexSearcher.search(booleanQuery.build(), 30)
+        return topDocsToMovies(topDocs)
+    }
 }
+
 

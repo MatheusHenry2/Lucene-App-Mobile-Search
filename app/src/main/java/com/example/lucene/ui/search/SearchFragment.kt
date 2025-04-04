@@ -16,6 +16,9 @@ import com.example.lucene.databinding.FragmentSearchBinding
 import com.example.lucene.states.BaseEvent
 import com.example.lucene.states.SearchAction
 import com.example.lucene.states.SearchEvent
+import com.example.lucene.utils.Constants.ACTION_GENRE
+import com.example.lucene.utils.Constants.ADVENTURE_GENRE
+import com.example.lucene.utils.Constants.SCI_FI_GENRE
 import com.example.lucene.utils.Constants.TAG
 import com.example.lucene.utils.LuceneMovieIndexerSingleton
 
@@ -24,6 +27,8 @@ class SearchFragment : Fragment() {
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SearchViewModel by viewModels()
+    private var selectedGenres = mutableSetOf<String>()
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -37,11 +42,42 @@ class SearchFragment : Fragment() {
         setupRecyclerView()
         setupSearchListener()
         setupSmartQueryButton()
+        setupGenreFilterButtons()
         observeViewModelEvents()
     }
 
     private fun setupRecyclerView() = with(binding) {
         resultsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+    }
+
+    private fun setupGenreFilterButtons() = with(binding){
+        btnSciFi.setOnClickListener { onGenreFilterClicked(it) }
+        btnAdventure.setOnClickListener { onGenreFilterClicked(it) }
+        btnAction.setOnClickListener { onGenreFilterClicked(it) }
+    }
+
+    private fun updateSearchResults() {
+        val query = binding.searchEditText.text.toString().trim()
+        if (query.isNotEmpty()) {
+            viewModel.startAction(SearchAction.SearchQueryWithGenres(query, selectedGenres))
+        }
+    }
+
+    private fun onGenreFilterClicked(view: View) {
+        when (view.id) {
+            R.id.btnSciFi -> toggleGenreFilter(SCI_FI_GENRE)
+            R.id.btnAdventure -> toggleGenreFilter(ADVENTURE_GENRE)
+            R.id.btnAction -> toggleGenreFilter(ACTION_GENRE)
+        }
+        updateSearchResults()
+    }
+
+    private fun toggleGenreFilter(genre: String) {
+        if (selectedGenres.contains(genre)) {
+            selectedGenres.remove(genre)
+        } else {
+            selectedGenres.add(genre)
+        }
     }
 
     private fun setupSearchListener() = with(binding) {
@@ -105,7 +141,7 @@ class SearchFragment : Fragment() {
         }
     }
 
-    private fun updateSmartQueryButtonColor() = with(binding){
+    private fun updateSmartQueryButtonColor() = with(binding) {
         if (viewModel.useBoosts) {
             smartQueryButton.setBackgroundColor(resources.getColor(R.color.enabledColor))
         } else {
